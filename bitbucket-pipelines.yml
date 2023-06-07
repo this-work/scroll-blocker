@@ -1,0 +1,19 @@
+pipelines:
+    default:
+        - step:
+              name: 'Install Node Modules'
+              image: node:16
+              script:
+                  - npm install
+              artifacts:
+                  - node_modules/**
+        - step:
+              name: 'Linting Code'
+              image: node:16
+              script:
+                  - npm run linting
+        - step:
+              name: 'Unit Testing'
+              image: node:16
+              script:
+                  - npm run mocha-unit-test

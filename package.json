@@ -1,0 +1,46 @@
+{
+    "name": "@this/scroll-blocker",
+    "version": "1.0.0",
+    "author": "THIS GmbH",
+    "homepage": "https://bitbucket.org/this-work/this.scroll-blocker/src/master/README.md",
+    "description": "THIS Scroll Blocker",
+    "private": false,
+    "scripts": {
+        "linting": "eslint src",
+        "mocha-unit-test": "mocha",
+        "mocha-coverage-test": "nyc mocha"
+    },
+    "keywords": [
+        "js",
+        "scroll",
+        "block",
+        "window",
+        "vue"
+    ],
+    "license": "MIT",
+    "files": [
+        "src"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git@bitbucket.org:this-work/this.scroll-blocker.git"
+    },
+    "bugs": {
+        "url": "https://bitbucket.org/this-work/this.scroll-blocker"
+    },
+    "devDependencies": {
+        "@babel/core": "^7.21.8",
+        "@babel/eslint-parser": "^7.16.5",
+        "@babel/preset-env": "^7.21.5",
+        "@babel/register": "^7.21.0",
+        "chai": "^4.3.7",
+        "core-js": "^3.30.2",
+        "eslint": "^8.4.1",
+        "eslint-plugin-vue": "^8.2.0",
+        "jsdom": "^20.0.0",
+        "mocha": "^10.2.0",
+        "nyc": "^15.1.0",
+        "sinon": "^15.0.4",
+        "sinon-chai": "^3.7.0"
+    }
+}
