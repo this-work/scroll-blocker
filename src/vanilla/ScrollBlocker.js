@@ -1,7 +1,7 @@
 /**
  * Contains information about an HTML element that will be misplaced when the scrollbar is removed and the property used to fix this.
  * @typedef {Object} MisplacedElement
- * @property {HTMLElement} element - An HTML element that is misplaced when the scrollbar is removed.
+ * @property {HTMLElement|NodeList} element - An HTML element or a NodeList with HTML elements that are misplaced when the scrollbar is removed.
  * @property {string} property - A CSS property used to fix the elements misplacement.
  */
 
@@ -13,8 +13,15 @@
  */
 
 /**
+ * A function that returns a list with MisplacedElement items.
+ * @function
+ * @name TypeFnGetMisplacedElements
+ * @return {Array<MisplacedElement>} - An array with MisplacedElement items.
+ */
+
+/**
  * Handles the scroll blocking of the documents root element.
- * @version 2.0.0
+ * @version 2.1.0
  * @author Sascha Quasthoff
  * @class ScrollBlocker
  */
@@ -40,7 +47,7 @@ export class ScrollBlocker {
      * Holds an array of HTML elements misplaced when scrollbar is removed.
      * @default []
      * @private
-     * @type {Array<MisplacedElement>}
+     * @type {array<TypeFnGetMisplacedElements>}
      */
     #misplacedElements = [];
 
@@ -132,6 +139,8 @@ export class ScrollBlocker {
      * @return {void}
      */
     #adjustElementPositions() {
+        document.body.style.top = window.scrollY ? `-${window.scrollY}px` : '';
+
         const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
 
         if (scrollbarWidth <= 0) {
@@ -139,8 +148,6 @@ export class ScrollBlocker {
         }
 
         this.#adjustMisplacedElements(`${scrollbarWidth}px`);
-
-        document.body.style.top = `-${window.scrollY}px`;
     }
 
     /**
@@ -159,7 +166,7 @@ export class ScrollBlocker {
     }
 
     /**
-     * Iterates over every `element` in `this.#misplacedElements` and sets its `property` to `value`.
+     * Iterates over every `element` in `this.#misplacedElements` and sets its `property` to `value`. If element is a function that returns the list of misplaced elements, it will be executed before.
      * @private
      * @param {string} value - A property value
      * @return {void}
@@ -167,9 +174,22 @@ export class ScrollBlocker {
     #adjustMisplacedElements(value) {
         document.documentElement.style.marginRight = value;
 
-        this.#misplacedElements
-            .filter(({ element }) => element)
-            .forEach(({ element, property }) => element.style[property] = value);
+        window.requestAnimationFrame(() => {
+
+            this.#misplacedElements
+                .map( fn => typeof fn === 'function' ? fn() : fn )
+                .flat()
+                .filter(misplacedElement => misplacedElement && misplacedElement.element)
+                .forEach(({ element, property }) => {
+
+                    if (element instanceof window.NodeList) {
+                        element.forEach(node => node.style[property] = value);
+                        return;
+                    }
+
+                    element.style[property] = value;
+                });
+        });
     }
 
     /**
@@ -207,12 +227,12 @@ export class ScrollBlocker {
      * Enables the scroll blocking on `documentElement`. Preserves the window scroll position and fixes the positions of `misplacedElements`.
      * @param {Object} [param = {}] - An object containing parameters.
      * @param {string} [param.breakpoint = this.#breakpoint] - Represents a breakpoint up to which the page scrolling will be blocked.
-     * @param {Array<MisplacedElement>} [param.misplacedElements = []] - A list of elements that are going to be misplaced when the scrollbar is removed.
+     * @param {TypeFnGetMisplacedElements} [param.misplacedElements] - A function that returns a list of elements that are going to be misplaced when the scrollbar is removed.
      * @return {void}
      */
     enable({
         breakpoint = this.#breakpoint,
-        misplacedElements = []
+        misplacedElements
     } = {}) {
         this.#breakpoint = breakpoint;
 
@@ -221,8 +241,8 @@ export class ScrollBlocker {
         }
 
         this.#misplacedElements = [
-            ...this.#options.misplacedElements,
-            ...misplacedElements
+            this.#options.misplacedElements,
+            misplacedElements
         ];
 
         if (!this.isEnabled) {

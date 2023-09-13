@@ -25,6 +25,10 @@ describe('ScrollBlocker', () => {
         global.window.addEventListener = sinon.fake();
         global.window.removeEventListener = sinon.fake();
 
+        global.window.requestAnimationFrame = sinon.fake(fn => {
+            global.window.setTimeout(fn, 20);
+        });
+
         scrollBlocker = new ScrollBlocker();
     });
 
@@ -45,8 +49,8 @@ describe('ScrollBlocker', () => {
             expect(rootContainsClassname(className)).to.be.true;
         });
 
-        it('should overwrite the default `misplacedElements` with the given ones.', () => {
-            const misplacedElements = [
+        it('should overwrite the default `misplacedElements` with the given ones.', done => {
+            const misplacedElements = () => [
                 {
                     element: document.querySelector('p:nth-of-type(1)'),
                     property: 'margin-right'
@@ -57,10 +61,17 @@ describe('ScrollBlocker', () => {
                 }
             ];
 
-            new ScrollBlocker({ misplacedElements }).enable();
+            new ScrollBlocker({ misplacedElements: misplacedElements }).enable();
 
-            expect(document.querySelector('p:nth-of-type(1)').style.marginRight).to.equal('1024px');
-            expect(document.querySelector('p:nth-of-type(2)').style.marginLeft).to.equal('1024px');
+            setTimeout( () => {
+                try {
+                    expect(document.querySelector('p:nth-of-type(1)').style.marginRight).to.equal('1024px');
+                    expect(document.querySelector('p:nth-of-type(2)').style.marginLeft).to.equal('1024px');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }, 150 );
         });
     });
 
@@ -126,17 +137,24 @@ describe('ScrollBlocker', () => {
             expect(document.querySelector('body').style.top).to.equal('-1000px');
         });
 
-        it('should adjust the styles of then given `misplacedElements`.', () => {
+        it('should adjust the styles of then given `misplacedElements`.', done => {
             const element = document.querySelector('p');
 
             scrollBlocker.enable({
-                misplacedElements: [{
+                misplacedElements: () => [{
                     element,
                     property: 'margin-right'
                 }]
             });
 
-            expect(element.style.marginRight).to.equal('1024px');
+            setTimeout( () => {
+                try {
+                    expect(element.style.marginRight).to.equal('1024px');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }, 150 );
         });
 
         it('should add a resize event listener on `window`.', () => {
@@ -182,10 +200,10 @@ describe('ScrollBlocker', () => {
             expect(document.documentElement.style.marginRight).to.equal('');
         });
 
-        it('should remove the style adjustments of the `misplacedElements`.', () => {
+        it('should remove the style adjustments of the `misplacedElements`.', done => {
             const element = document.querySelector('p');
             const scrollBlocker = new ScrollBlocker({
-                misplacedElements: [{
+                misplacedElements: () => [{
                     element,
                     // The property 'margin' is used here instead of a more specific one like 'margin-right'
                     // because JSDom is not able to reset properties like 'margin-right' at the moment.
@@ -197,7 +215,14 @@ describe('ScrollBlocker', () => {
             scrollBlocker.enable();
             scrollBlocker.disable();
 
-            expect(element.style.marginRight).to.equal('');
+            setTimeout( () => {
+                try {
+                    expect(element.style.marginRight).to.equal('');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }, 150 );
         });
 
         it('should remove a resize event listener on `window`.', () => {
@@ -209,12 +234,19 @@ describe('ScrollBlocker', () => {
     });
 
     describe('#adjustElementPositions()', () => {
-        it('should not adjust any stylings when no scrollbar is present.', () => {
+        it('should not adjust any stylings when no scrollbar is present.', done => {
             window.innerWidth = 0;
 
             scrollBlocker.enable();
 
-            expect(document.body.style.top).to.equal('');
+            setTimeout( () => {
+                try {
+                    expect(document.body.style.top).to.equal('');
+                    done();
+                } catch (err) {
+                    done(err);
+                }
+            }, 150 );
         });
     });
 

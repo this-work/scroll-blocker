@@ -1,9 +1,10 @@
 {
     "name": "@this/scroll-blocker",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "author": "THIS GmbH",
     "homepage": "https://bitbucket.org/this-work/this.scroll-blocker/src/master/README.md",
     "description": "THIS Scroll Blocker",
+    "main": "lib/module.js",
     "private": false,
     "scripts": {
         "linting": "eslint src",
@@ -19,6 +20,7 @@
     ],
     "license": "MIT",
     "files": [
+        "lib",
         "src"
     ],
     "repository": {
